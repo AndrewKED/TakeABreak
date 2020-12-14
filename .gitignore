@@ -1,0 +1,47 @@
+# Backup files
+*.bak
+*.~*
+*.tmp
+
+# Often used for temporary storage
+*.zip
+
+# Contains compiled files and output
+*.dcu
+*.exe
+*.dll
+*.map
+*.stat
+
+# Delphi files to ignore
+*.drc
+*.dsk
+*.identcache
+*.local
+*.map
+#  https://stackoverflow.com/questions/2326172/delphi-res-files-and-git
+#  which suggests to add only the project.res file (manually) if .rc files are present to rebuild .res files
+*.res
+*.tvsconfig
+
+# General files to be ignored/files from other program
+*.jbf
+*.otf
+*.py
+*.xml
+*.txt
+*.bmp
+
+# Contains local copies and work-in-progress
+Versions/**
+WIP/**
+Snapshots/**
+Temp/**
+
+# Various support sub-folders
+__history/**
+__recovery/**
+InstallationFiles/**
+Installations/**
+Win32/**
+
