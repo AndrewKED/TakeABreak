@@ -284,14 +284,12 @@ begin
     bbTaking.Enabled := TRUE;
   end;
 
-  // Once triggered, if exercise is nor tunning, every 30 seconds, beep and show again
+  // Once triggered, if exercise is not running, beep every 30 seconds to annoy.
   if ((countDown < -30) and
       (bbTaking.Enabled)) then
   begin
     countDown := 0;
     Beep;
-    WindowState := wsNormal;
-    ForceForegroundWindow(Application.Handle);
   end;
 
   lBreakTime.Caption := FormatDateTime('nn:ss', timerBreak/(24*60*60));
