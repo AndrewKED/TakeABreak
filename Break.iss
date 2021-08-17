@@ -1,5 +1,5 @@
 #define MyAppName "Take A Break"
-#define MyAppVersion "1.3.0"
+#define MyAppVersion "1.6.0"
 #define Year "2020"
 #define MyAppPublisher "Answer Systems"
 

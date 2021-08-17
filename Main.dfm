@@ -15032,21 +15032,21 @@ object Form1: TForm1
   end
   object Label1: TLabel
     Left = 215
-    Top = 463
+    Top = 448
     Width = 66
     Height = 13
     Caption = 'Show again in'
   end
   object Label2: TLabel
     Left = 360
-    Top = 463
+    Top = 448
     Width = 37
     Height = 13
     Caption = 'minutes'
   end
   object lNextBreak: TLabel
     Left = 215
-    Top = 440
+    Top = 425
     Width = 119
     Height = 13
     Caption = 'Next break in XX minutes'
@@ -15079,6 +15079,13 @@ object Form1: TForm1
     ParentFont = False
     Visible = False
   end
+  object Label3: TLabel
+    Left = 215
+    Top = 473
+    Width = 85
+    Height = 13
+    Caption = 'Audible reminders'
+  end
   object bbTaken: TBitBtn
     Left = 110
     Top = 420
@@ -15099,8 +15106,8 @@ object Form1: TForm1
     OnClick = bbTakenClick
   end
   object seMinutes: TSpinEdit
-    Left = 295
-    Top = 458
+    Left = 305
+    Top = 443
     Width = 51
     Height = 22
     MaxValue = 2000
@@ -15127,6 +15134,17 @@ object Form1: TForm1
     ShowHint = True
     TabOrder = 2
     OnClick = bbTakingClick
+  end
+  object seAudibleReminders: TSpinEdit
+    Left = 305
+    Top = 468
+    Width = 51
+    Height = 22
+    MaxValue = 2000
+    MinValue = 1
+    TabOrder = 3
+    Value = 5
+    OnChange = seMinutesChange
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer

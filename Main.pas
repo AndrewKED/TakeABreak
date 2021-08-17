@@ -18,6 +18,8 @@ type
     lBreakTime: TLabel;
     lBreakTimeTitle: TLabel;
     bbTaking: TBitBtn;
+    Label3: TLabel;
+    seAudibleReminders: TSpinEdit;
     procedure bbTakenClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -42,6 +44,7 @@ uses
 var
   countDown : Integer;
   timerBreak : Integer;
+  numBeeps : Integer;
 
 {$R *.dfm}
 
@@ -147,11 +150,15 @@ begin
   bbTaking.Enabled := FALSE;
 
   countDown := seMinutes.Value * 60;
+  numBeeps := seAudibleReminders.Value;
 
   lBreakTime.Visible := FALSE;
   lBreakTimeTitle.Visible := FALSE;
 
-  WindowState := wsMinimized;
+  if (Sender = bbTaken) then
+  begin
+    WindowState := wsMinimized;
+  end;
 end;
 
 //***************************************************************************
@@ -211,9 +218,22 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   Caption := Caption + ' v' + GetApplicationVersion;
 
-  countDown := seMinutes.Value * 60;
+  bbTakenClick(Sender);
 end;
 
+//***************************************************************************
+//
+//  FUNCTION  :
+//
+//  I/P       :
+//
+//  O/P       :
+//
+//  OPERATION :
+//
+//  UPDATED   :
+//
+//***************************************************************************
 procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
@@ -277,11 +297,17 @@ begin
   if (countDown = 0) then
   begin
     // Triggered!
-    Beep;
+    if (numBeeps > 0) then
+    begin
+      Beep;
+      Dec(numBeeps);
+    end;
+
     WindowState := wsNormal;
     ForceForegroundWindow(Application.Handle);
     bbTaken.Enabled := TRUE;
     bbTaking.Enabled := TRUE;
+    bbTaking.SetFocus;
   end;
 
   // Once triggered, if exercise is not running, beep every 30 seconds to annoy.
