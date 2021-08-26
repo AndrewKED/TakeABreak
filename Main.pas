@@ -297,11 +297,7 @@ begin
   if (countDown = 0) then
   begin
     // Triggered!
-    if (numBeeps > 0) then
-    begin
-      Beep;
-      Dec(numBeeps);
-    end;
+    Beep;
 
     WindowState := wsNormal;
     ForceForegroundWindow(Application.Handle);
@@ -310,12 +306,17 @@ begin
     bbTaking.SetFocus;
   end;
 
-  // Once triggered, if exercise is not running, beep every 30 seconds to annoy.
+  // Once triggered, if exercise is not running,
+  // beep every 30 seconds for a configured number of beeps, to annoy.
   if ((countDown < -30) and
       (bbTaking.Enabled)) then
   begin
     countDown := 0;
-    Beep;
+    if (numBeeps > 0) then
+    begin
+      Beep;
+      Dec(numBeeps);
+    end;
   end;
 
   lBreakTime.Caption := FormatDateTime('nn:ss', timerBreak/(24*60*60));
