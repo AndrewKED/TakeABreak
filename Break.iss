@@ -1,5 +1,5 @@
 #define MyAppName "Take A Break"
-#define MyAppVersion "1.7.0"
+#define MyAppVersion "1.7.1"
 #define Year GetDateTimeString('yyyy', '', '');
 #define MyAppPublisher "Answer Systems"
 

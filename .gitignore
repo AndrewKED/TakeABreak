@@ -8,6 +8,7 @@
 
 # Contains compiled files and output
 *.dcu
+*.dres
 *.exe
 *.dll
 *.map

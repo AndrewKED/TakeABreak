@@ -39,7 +39,7 @@ var
 implementation
 
 uses
-  App_Ops;
+  App_Ops, Font_Ops;
 
 var
   countDown : Integer;
@@ -217,6 +217,8 @@ end;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Caption := Caption + ' v' + GetApplicationVersion;
+
+  LoadResourceFont('FA_SOLID');
 
   bbTakenClick(Sender);
 end;

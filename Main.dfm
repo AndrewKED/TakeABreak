@@ -15097,7 +15097,7 @@ object Form1: TForm1
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -47
-    Font.Name = 'Font Awesome 5 Pro Solid'
+    Font.Name = 'Font Awesome 6 Pro Solid'
     Font.Style = []
     ParentFont = False
     ParentShowHint = False
@@ -15127,7 +15127,7 @@ object Form1: TForm1
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -47
-    Font.Name = 'Font Awesome 5 Pro Solid'
+    Font.Name = 'Font Awesome 6 Pro Solid'
     Font.Style = []
     ParentFont = False
     ParentShowHint = False
