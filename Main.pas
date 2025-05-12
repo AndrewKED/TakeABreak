@@ -218,7 +218,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 begin
   Caption := Caption + ' v' + GetApplicationVersion;
 
-  LoadResourceFont('FA_SOLID');
+  LoadResourceFont('FA6SOLID');
 
   bbTakenClick(Sender);
 end;

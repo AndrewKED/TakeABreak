@@ -1,5 +1,5 @@
 #define MyAppName "Take A Break"
-#define MyAppVersion "1.7.1"
+#define MyAppVersion "1.7.2"
 #define Year GetDateTimeString('yyyy', '', '');
 #define MyAppPublisher "Answer Systems"
 
@@ -30,6 +30,9 @@ Uninstallable=True
 
 [Files]
 Source: "TakeABreak.exe"; DestDir: "{app}"
+
+[Run]
+Filename: "{app}\TakeABreak.exe"; Description: "Launch application"; Flags: postinstall nowait
 
 [Icons]
 Name: "{group}\Take A Break"; Filename: "{app}\TakeABreak.exe"; Comment: "Prompt to regularly break from computer/desk work";
