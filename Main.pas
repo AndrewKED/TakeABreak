@@ -9,17 +9,15 @@ uses
 type
   TForm1 = class(TForm)
     Image1: TImage;
-    bbTaken: TBitBtn;
-    Label1: TLabel;
-    seMinutes: TSpinEdit;
-    Label2: TLabel;
     Timer1: TTimer;
+    Panel1: TPanel;
+    Label1: TLabel;
+    Label2: TLabel;
     lNextBreak: TLabel;
-    lBreakTime: TLabel;
-    lBreakTimeTitle: TLabel;
+    bbTaken: TBitBtn;
+    seMinutes: TSpinEdit;
     bbTaking: TBitBtn;
-    Label3: TLabel;
-    seAudibleReminders: TSpinEdit;
+    pBreakTime: TPanel;
     procedure bbTakenClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -39,9 +37,23 @@ var
 implementation
 
 uses
+  System.DateUtils,
   App_Ops, Font_Ops;
 
+const
+  WARNING_SECONDS = 30;
+  WARNING_BEEPS = 5;
+  MIN_BREAK_TIME = 30;
+
+type
+  TState = (
+    ST_IDLE,
+    ST_TIME_TO_BREAK,
+    ST_TAKING_BREAK
+  );
+
 var
+  currentState : TState;
   countDown : Integer;
   timerBreak : Integer;
   numBeeps : Integer;
@@ -146,19 +158,20 @@ end; // ForceForegroundWindow
 //***************************************************************************
 procedure TForm1.bbTakenClick(Sender: TObject);
 begin
+  if (timerBreak < 30) then
+  begin
+    Exit;
+  end;
+
   bbTaken.Enabled := FALSE;
   bbTaking.Enabled := FALSE;
+  currentState := ST_IDLE;
 
   countDown := seMinutes.Value * 60;
-  numBeeps := seAudibleReminders.Value;
 
-  lBreakTime.Visible := FALSE;
-  lBreakTimeTitle.Visible := FALSE;
+  pBreakTime.Visible := FALSE;
 
-  if (Sender = bbTaken) then
-  begin
-    WindowState := wsMinimized;
-  end;
+  WindowState := wsMinimized;
 end;
 
 //***************************************************************************
@@ -177,10 +190,13 @@ end;
 procedure TForm1.bbTakingClick(Sender: TObject);
 begin
   bbTaking.Enabled := FALSE;
+  bbTaken.Enabled := FALSE;
+
+  currentState := ST_TAKING_BREAK;
 
   timerBreak := 0;
-  lBreakTime.Visible := TRUE;
-  lBreakTimeTitle.Visible := TRUE;
+  pBreakTime.Caption := 'Break time';
+  pBreakTime.Visible := TRUE;
 end;
 
 //***************************************************************************
@@ -199,6 +215,10 @@ end;
 procedure TForm1.FormActivate(Sender: TObject);
 begin
   WindowState := wsMinimized;
+
+  // First break in 20 minutes
+  currentState := ST_IDLE;
+  countdown := 20 * 60;
 end;
 
 //***************************************************************************
@@ -243,13 +263,13 @@ begin
       (Key = VK_F1)) then
   begin
     bbTakingClick(Sender);
-  end;
+  end; // if
 
   if ((bbTaken.Enabled) and
       (Key = VK_F10)) then
   begin
     bbTakenClick(Sender);
-  end;
+  end; // if
 end;
 
 //***************************************************************************
@@ -285,43 +305,58 @@ end;
 //***************************************************************************
 procedure TForm1.Timer1Timer(Sender: TObject);
 begin
-  Dec(countDown);
-
-  if (countDown >= 0) then
-  begin
-    lNextBreak.Caption := 'Next break in ' + IntToStr(countDown div 60) + ' minutes';
-  end // if
-  else
-  begin
-    Inc(timerBreak);
-  end;
-
-  if (countDown = 0) then
-  begin
-    // Triggered!
-    Beep;
-
-    WindowState := wsNormal;
-    ForceForegroundWindow(Application.Handle);
-    bbTaken.Enabled := TRUE;
-    bbTaking.Enabled := TRUE;
-    bbTaking.SetFocus;
-  end;
-
-  // Once triggered, if exercise is not running,
-  // beep every 30 seconds for a configured number of beeps, to annoy.
-  if ((countDown < -30) and
-      (bbTaking.Enabled)) then
-  begin
-    countDown := 0;
-    if (numBeeps > 0) then
+  case currentState of
+    ST_TIME_TO_BREAK :
     begin
-      Beep;
-      Dec(numBeeps);
+      Dec(countDown);
+      // Once triggered, if exercise is not running,
+      // beep every 30 seconds for a configured number of beeps, to annoy.
+      if (countDown <= 0) then
+      begin
+        countDown := WARNING_SECONDS;
+        if (numBeeps > 0) then
+        begin
+          Beep;
+          Dec(numBeeps);
+        end;
+      end;
+    end;
+
+    ST_TAKING_BREAK :
+    begin
+      Inc(timerBreak);
+      if (timerBreak > MIN_BREAK_TIME) then
+      begin
+        bbTaken.Enabled := TRUE;
+      end;
+      pBreakTime.Caption := 'Break time = ' + FormatDateTime('nn:ss', timerBreak/(24*60*60));
+    end // case
+
+    else
+    begin
+      // ST_IDLE
+      Dec(countDown);
+      if (countDown > 0) then
+      begin
+        lNextBreak.Caption := 'Next break in ' + IntToStr(countDown div 60) + ' minutes';
+      end // if
+      else if (countDown <= 0) then
+      begin
+        // Triggered!
+        Beep;
+
+        WindowState := wsNormal;
+        ForceForegroundWindow(Application.Handle);
+        timerBreak := 0;
+        bbTaking.Enabled := TRUE;
+        bbTaken.Enabled := FALSE;
+        bbTaking.SetFocus;
+        currentState := ST_TIME_TO_BREAK;
+        countDown := WARNING_SECONDS;
+        numBeeps := WARNING_BEEPS;
+      end
     end;
   end;
-
-  lBreakTime.Caption := FormatDateTime('nn:ss', timerBreak/(24*60*60));
 end;
 
 end.

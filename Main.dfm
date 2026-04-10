@@ -2,9 +2,10 @@ object Form1: TForm1
   Left = 0
   Top = 0
   BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = bsNone
   Caption = 'Take A Break'
-  ClientHeight = 507
-  ClientWidth = 409
+  ClientHeight = 590
+  ClientWidth = 460
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -18,11 +19,13 @@ object Form1: TForm1
   OnKeyDown = FormKeyDown
   TextHeight = 13
   object Image1: TImage
-    Left = 10
-    Top = 10
-    Width = 400
-    Height = 400
+    Left = 0
+    Top = 41
+    Width = 460
+    Height = 448
+    Align = alClient
     AutoSize = True
+    Center = True
     Picture.Data = {
       07544269746D617036530700424D365307000000000036000000280000009001
       000090010000010018000000000000530700130B0000130B0000000000000000
@@ -15027,122 +15030,109 @@ object Form1: TForm1
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
       FFFF}
+    Proportional = True
+    Stretch = True
+    ExplicitLeft = 5
   end
-  object Label1: TLabel
-    Left = 215
-    Top = 448
-    Width = 66
-    Height = 13
-    Caption = 'Show again in'
-  end
-  object Label2: TLabel
-    Left = 360
-    Top = 448
-    Width = 37
-    Height = 13
-    Caption = 'minutes'
-  end
-  object lNextBreak: TLabel
-    Left = 215
-    Top = 425
-    Width = 119
-    Height = 13
-    Caption = 'Next break in XX minutes'
-  end
-  object lBreakTime: TLabel
-    Left = 205
-    Top = 360
-    Width = 84
-    Height = 40
-    Caption = '00:00'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -33
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Visible = False
-  end
-  object lBreakTimeTitle: TLabel
-    Left = 20
-    Top = 360
-    Width = 179
-    Height = 40
-    Caption = 'Break timer:'
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -33
-    Font.Name = 'Tahoma'
-    Font.Style = []
-    ParentFont = False
-    Visible = False
-  end
-  object Label3: TLabel
-    Left = 215
-    Top = 473
-    Width = 85
-    Height = 13
-    Caption = 'Audible reminders'
-  end
-  object bbTaken: TBitBtn
-    Left = 110
-    Top = 420
-    Width = 80
-    Height = 80
-    Hint = 'Resume working (F10)'
-    Caption = #61704
-    Enabled = False
-    Font.Charset = DEFAULT_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -47
-    Font.Name = 'Font Awesome 6 Pro Solid'
-    Font.Style = []
-    ParentFont = False
-    ParentShowHint = False
-    ShowHint = True
+  object Panel1: TPanel
+    Left = 0
+    Top = 489
+    Width = 460
+    Height = 101
+    Align = alBottom
     TabOrder = 0
-    OnClick = bbTakenClick
+    ExplicitLeft = 390
+    ExplicitTop = 5
+    ExplicitWidth = 496
+    object Label1: TLabel
+      Left = 220
+      Top = 38
+      Width = 66
+      Height = 13
+      Caption = 'Show again in'
+    end
+    object Label2: TLabel
+      Left = 365
+      Top = 38
+      Width = 37
+      Height = 13
+      Caption = 'minutes'
+    end
+    object lNextBreak: TLabel
+      Left = 220
+      Top = 15
+      Width = 119
+      Height = 13
+      Caption = 'Next break in XX minutes'
+    end
+    object bbTaken: TBitBtn
+      Left = 115
+      Top = 10
+      Width = 80
+      Height = 80
+      Hint = 'Resume working (F10)'
+      Caption = #61704
+      Enabled = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -47
+      Font.Name = 'Font Awesome 6 Pro Solid'
+      Font.Style = []
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 0
+      OnClick = bbTakenClick
+    end
+    object seMinutes: TSpinEdit
+      Left = 310
+      Top = 33
+      Width = 51
+      Height = 22
+      MaxValue = 2000
+      MinValue = 1
+      TabOrder = 1
+      Value = 20
+      OnChange = seMinutesChange
+    end
+    object bbTaking: TBitBtn
+      Left = 15
+      Top = 10
+      Width = 80
+      Height = 80
+      Hint = 'Start the break (F1)'
+      Caption = #62804
+      Enabled = False
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -47
+      Font.Name = 'Font Awesome 6 Pro Solid'
+      Font.Style = []
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
+      OnClick = bbTakingClick
+    end
   end
-  object seMinutes: TSpinEdit
-    Left = 305
-    Top = 443
-    Width = 51
-    Height = 22
-    MaxValue = 2000
-    MinValue = 1
-    TabOrder = 1
-    Value = 20
-    OnChange = seMinutesChange
-  end
-  object bbTaking: TBitBtn
-    Left = 10
-    Top = 420
-    Width = 80
-    Height = 80
-    Hint = 'Start the break (F1)'
-    Caption = #62804
-    Enabled = False
+  object pBreakTime: TPanel
+    Left = 0
+    Top = 0
+    Width = 460
+    Height = 41
+    Align = alTop
+    Caption = 'Break Time'
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
-    Font.Height = -47
-    Font.Name = 'Font Awesome 6 Pro Solid'
-    Font.Style = []
+    Font.Height = -27
+    Font.Name = 'Tahoma'
+    Font.Style = [fsBold]
     ParentFont = False
-    ParentShowHint = False
-    ShowHint = True
-    TabOrder = 2
-    OnClick = bbTakingClick
-  end
-  object seAudibleReminders: TSpinEdit
-    Left = 305
-    Top = 468
-    Width = 51
-    Height = 22
-    MaxValue = 2000
-    MinValue = 1
-    TabOrder = 3
-    Value = 5
-    OnChange = seMinutesChange
+    TabOrder = 1
+    Visible = False
+    ExplicitLeft = 530
+    ExplicitTop = 165
+    ExplicitWidth = 185
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer
