@@ -15,6 +15,7 @@ object Form1: TForm1
   KeyPreview = True
   Position = poScreenCenter
   OnActivate = FormActivate
+  OnClose = FormClose
   OnCreate = FormCreate
   OnKeyDown = FormKeyDown
   TextHeight = 13
@@ -15041,9 +15042,6 @@ object Form1: TForm1
     Height = 101
     Align = alBottom
     TabOrder = 0
-    ExplicitLeft = 390
-    ExplicitTop = 5
-    ExplicitWidth = 496
     object Label1: TLabel
       Left = 220
       Top = 38
@@ -15130,9 +15128,6 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 1
     Visible = False
-    ExplicitLeft = 530
-    ExplicitTop = 165
-    ExplicitWidth = 185
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer

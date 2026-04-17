@@ -25,6 +25,7 @@ type
     procedure seMinutesChange(Sender: TObject);
     procedure FormActivate(Sender: TObject);
     procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
   public
@@ -234,6 +235,20 @@ end;
 //  UPDATED   :
 //
 //***************************************************************************
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Action := caNone;
+end;
+
+//***************************************************************************
+//
+//  OPERATION :
+//
+//  I/P       :
+//
+//  O/P       :
+//
+//***************************************************************************
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   Caption := Caption + ' v' + GetApplicationVersion;
@@ -308,14 +323,21 @@ begin
   case currentState of
     ST_TIME_TO_BREAK :
     begin
+      // Count down the time during which the user does not respond, and take
+      // a break (signalled by clicking on the bbTaking button)
       Dec(countDown);
-      // Once triggered, if exercise is not running,
-      // beep every 30 seconds for a configured number of beeps, to annoy.
       if (countDown <= 0) then
       begin
+        // The user has taken too long to respond (> 30 seconds)
+
+        // Bring the reminder to the foreground, in case they had ignored it.
+        ForceForegroundWindow(Application.Handle);
         countDown := WARNING_SECONDS;
+
         if (numBeeps > 0) then
         begin
+          // For the first few times that the user ignores the prompt to take
+          // a break, sound a beep.
           Beep;
           Dec(numBeeps);
         end;
@@ -324,6 +346,9 @@ begin
 
     ST_TAKING_BREAK :
     begin
+      // Ensure that the screen stays in the foreground while taking the break.
+      // This will force the user to stop whatever else they were doing
+      ForceForegroundWindow(Application.Handle);
       Inc(timerBreak);
       if (timerBreak > MIN_BREAK_TIME) then
       begin
