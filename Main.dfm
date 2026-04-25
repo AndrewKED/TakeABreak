@@ -1,11 +1,10 @@
 object Form1: TForm1
   Left = 0
   Top = 0
-  BorderIcons = [biSystemMenu, biMinimize]
-  BorderStyle = bsNone
+  BorderIcons = [biMinimize]
   Caption = 'Take A Break'
-  ClientHeight = 590
-  ClientWidth = 460
+  ClientHeight = 551
+  ClientWidth = 444
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -22,8 +21,8 @@ object Form1: TForm1
   object Image1: TImage
     Left = 0
     Top = 41
-    Width = 460
-    Height = 448
+    Width = 444
+    Height = 409
     Align = alClient
     AutoSize = True
     Center = True
@@ -15034,14 +15033,18 @@ object Form1: TForm1
     Proportional = True
     Stretch = True
     ExplicitLeft = 5
+    ExplicitWidth = 460
+    ExplicitHeight = 448
   end
   object Panel1: TPanel
     Left = 0
-    Top = 489
-    Width = 460
+    Top = 450
+    Width = 444
     Height = 101
     Align = alBottom
     TabOrder = 0
+    ExplicitTop = 489
+    ExplicitWidth = 460
     object Label1: TLabel
       Left = 220
       Top = 38
@@ -15116,7 +15119,7 @@ object Form1: TForm1
   object pBreakTime: TPanel
     Left = 0
     Top = 0
-    Width = 460
+    Width = 444
     Height = 41
     Align = alTop
     Caption = 'Break Time'
@@ -15128,6 +15131,7 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 1
     Visible = False
+    ExplicitWidth = 460
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer

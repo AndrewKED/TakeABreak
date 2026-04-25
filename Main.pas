@@ -342,24 +342,43 @@ begin
           Dec(numBeeps);
         end;
       end;
-    end;
+    end; // case
 
     ST_TAKING_BREAK :
     begin
-      // Ensure that the screen stays in the foreground while taking the break.
-      // This will force the user to stop whatever else they were doing
-      ForceForegroundWindow(Application.Handle);
       Inc(timerBreak);
-      if (timerBreak > MIN_BREAK_TIME) then
-      begin
-        bbTaken.Enabled := TRUE;
-      end;
       pBreakTime.Caption := 'Break time = ' + FormatDateTime('nn:ss', timerBreak/(24*60*60));
-    end // case
+
+      if (timerBreak mod 15 = 0) then
+      begin
+        // Pop the screen to foreground every 15 seconds while taking the break.
+        // This will encourage the user to stop whatever else they were doing,
+        // and take the break!
+        ForceForegroundWindow(Application.Handle);
+      end;
+
+      if (timerBreak >= MIN_BREAK_TIME) then
+      begin
+        // The "Return to work" button is enabled only after a minimum break
+        // period has been registered.
+        // This will encourage the user to take the break, for the minimum
+        // configured time.
+        bbTaken.Enabled := TRUE;
+
+        if (timerBreak >= 60 * 60) then
+        begin
+          // If the break has been running for 30 minutes, assume that the user
+          // has gone away from the PC, and automatically start work again.
+          bbTakenClick(nil);
+        end;
+      end;
+    end; // case
 
     else
     begin
       // ST_IDLE
+      currentState := ST_IDLE;
+
       Dec(countDown);
       if (countDown > 0) then
       begin
@@ -382,6 +401,11 @@ begin
       end
     end;
   end;
+
+  // Only permit changing of the inter-break time during working time.
+  // If enabled during a break, it has occasionally been cleared, resulting in
+  // a very short break repeat time.
+  seMinutes.Enabled := (currentState = ST_IDLE);
 end;
 
 end.
