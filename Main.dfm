@@ -1,7 +1,7 @@
-object Form1: TForm1
+object fMain: TfMain
   Left = 0
   Top = 0
-  BorderIcons = [biMinimize]
+  BorderIcons = [biSystemMenu, biMinimize]
   Caption = 'Take A Break'
   ClientHeight = 551
   ClientWidth = 444
@@ -15043,8 +15043,6 @@ object Form1: TForm1
     Height = 101
     Align = alBottom
     TabOrder = 0
-    ExplicitTop = 489
-    ExplicitWidth = 460
     object Label1: TLabel
       Left = 220
       Top = 38
@@ -15090,6 +15088,7 @@ object Form1: TForm1
       Top = 33
       Width = 51
       Height = 22
+      Increment = 10
       MaxValue = 2000
       MinValue = 1
       TabOrder = 1
@@ -15131,7 +15130,6 @@ object Form1: TForm1
     ParentFont = False
     TabOrder = 1
     Visible = False
-    ExplicitWidth = 460
   end
   object Timer1: TTimer
     OnTimer = Timer1Timer

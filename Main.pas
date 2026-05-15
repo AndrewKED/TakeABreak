@@ -7,7 +7,7 @@ uses
   Dialogs, ExtCtrls, StdCtrls, Spin, Buttons;
 
 type
-  TForm1 = class(TForm)
+  TfMain = class(TForm)
     Image1: TImage;
     Timer1: TTimer;
     Panel1: TPanel;
@@ -28,27 +28,32 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
+    procedure ResetForPCActiveState;
   public
     { Public declarations }
   end;
 
 var
-  Form1: TForm1;
+  fMain: TfMain;
 
 implementation
 
 uses
-  System.DateUtils,
+  System.DateUtils, System.Math,
   App_Ops, Font_Ops;
 
 const
+  PROGRAM_NAME = 'Take A Break';
+
   WARNING_SECONDS = 30;
   WARNING_BEEPS = 5;
-  MIN_BREAK_TIME = 30;
+  MINIMUM_BREAK_SECONDS = 30;
+  PC_USER_IS_IDLE_MINUTES = 15;   // If no mouse/keyboard in 15 minutes, user is considered to be taking a break.
 
 type
   TState = (
-    ST_IDLE,
+    ST_IDLE_PC_IN_USE,
+    ST_IDLE_PC_UNATTENDED,
     ST_TIME_TO_BREAK,
     ST_TAKING_BREAK
   );
@@ -58,6 +63,7 @@ var
   countDown : Integer;
   timerBreak : Integer;
   numBeeps : Integer;
+  breakPCIdleTime : Integer;      // The maximum amount of time, during the break, when there was no mouse/keyboard activity
 
 {$R *.dfm}
 
@@ -146,6 +152,30 @@ end; // ForceForegroundWindow
 
 //***************************************************************************
 //
+//  OPERATION : Set controls and application to idle conditions, as required
+//              to start timeout.
+//
+//              The state is not changed i.e. the user may/may not be using the PC
+//
+//  I/P       :
+//
+//  O/P       :
+//
+//***************************************************************************
+procedure TfMain.ResetForPCActiveState;
+begin
+  bbTaken.Enabled := FALSE;
+  bbTaking.Enabled := FALSE;
+
+  countDown := seMinutes.Value * 60;
+
+  pBreakTime.Visible := FALSE;
+
+  WindowState := wsMinimized;
+end; // ResetForPCActiveState
+
+//***************************************************************************
+//
 //  FUNCTION  :
 //
 //  I/P       :
@@ -157,22 +187,16 @@ end; // ForceForegroundWindow
 //  UPDATED   :
 //
 //***************************************************************************
-procedure TForm1.bbTakenClick(Sender: TObject);
+procedure TfMain.bbTakenClick(Sender: TObject);
 begin
-  if (timerBreak < 30) then
+  if (timerBreak < MINIMUM_BREAK_SECONDS) then
   begin
+    // Once triggered, the break period must be a certain minimum time
     Exit;
   end;
 
-  bbTaken.Enabled := FALSE;
-  bbTaking.Enabled := FALSE;
-  currentState := ST_IDLE;
-
-  countDown := seMinutes.Value * 60;
-
-  pBreakTime.Visible := FALSE;
-
-  WindowState := wsMinimized;
+  currentState := ST_IDLE_PC_IN_USE;
+  ResetForPCActiveState;
 end;
 
 //***************************************************************************
@@ -188,7 +212,7 @@ end;
 //  UPDATED   :
 //
 //***************************************************************************
-procedure TForm1.bbTakingClick(Sender: TObject);
+procedure TfMain.bbTakingClick(Sender: TObject);
 begin
   bbTaking.Enabled := FALSE;
   bbTaken.Enabled := FALSE;
@@ -198,6 +222,7 @@ begin
   timerBreak := 0;
   pBreakTime.Caption := 'Break time';
   pBreakTime.Visible := TRUE;
+  breakPCIdleTime := 0;
 end;
 
 //***************************************************************************
@@ -213,31 +238,10 @@ end;
 //  UPDATED   :
 //
 //***************************************************************************
-procedure TForm1.FormActivate(Sender: TObject);
+procedure TfMain.FormActivate(Sender: TObject);
 begin
-  WindowState := wsMinimized;
-
-  // First break in 20 minutes
-  currentState := ST_IDLE;
-  countdown := 20 * 60;
-end;
-
-//***************************************************************************
-//
-//  FUNCTION  :
-//
-//  I/P       :
-//
-//  O/P       :
-//
-//  OPERATION :
-//
-//  UPDATED   :
-//
-//***************************************************************************
-procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
-begin
-  Action := caNone;
+  currentState := ST_IDLE_PC_IN_USE;
+  ResetForPCActiveState;
 end;
 
 //***************************************************************************
@@ -249,13 +253,34 @@ end;
 //  O/P       :
 //
 //***************************************************************************
-procedure TForm1.FormCreate(Sender: TObject);
+procedure TfMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
-  Caption := Caption + ' v' + GetApplicationVersion;
+  MessageDlg(
+    'Take responsibility for your own health.' + sLineBreak +
+    sLineBreak +
+    'Set the "' + PROGRAM_NAME + '"  program running again as soon as possible.',
+    mtInformation, [mbOK], 0
+  );
+end;
+
+//***************************************************************************
+//
+//  OPERATION :
+//
+//  I/P       :
+//
+//  O/P       :
+//
+//***************************************************************************
+procedure TfMain.FormCreate(Sender: TObject);
+begin
+  Caption := PROGRAM_NAME + ' v' + GetApplicationVersion;
 
   LoadResourceFont('FA6SOLID');
 
-  bbTakenClick(Sender);
+  // The maximum working time will not be remembered between sessions.
+  // 20 minutes of working is considered a reasonable fixed value to make constant.
+  seMinutes.Value := 20;
 end;
 
 //***************************************************************************
@@ -271,7 +296,7 @@ end;
 //  UPDATED   :
 //
 //***************************************************************************
-procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word;
+procedure TfMain.FormKeyDown(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   if ((bbTaking.Enabled) and
@@ -300,7 +325,7 @@ end;
 //  UPDATED   :
 //
 //***************************************************************************
-procedure TForm1.seMinutesChange(Sender: TObject);
+procedure TfMain.seMinutesChange(Sender: TObject);
 begin
   countDown := seMinutes.Value * 60;
 end;
@@ -318,13 +343,22 @@ end;
 //  UPDATED   :
 //
 //***************************************************************************
-procedure TForm1.Timer1Timer(Sender: TObject);
+procedure TfMain.Timer1Timer(Sender: TObject);
 begin
+  if (GetIdleTime > PC_USER_IS_IDLE_MINUTES * 60 * 1000) then
+  begin
+    // Irrespective of the current state, if there has been no mouse/keyboard
+    // activity on the PC for 30 minutes, assume that the computer user is
+    // taking some form of a break.
+    currentState := ST_IDLE_PC_UNATTENDED;
+    ResetForPCActiveState;
+  end;
+
   case currentState of
     ST_TIME_TO_BREAK :
     begin
       // Count down the time during which the user does not respond, and take
-      // a break (signalled by clicking on the bbTaking button)
+      // a break (signalled by clicking on the "now taking a break" button)
       Dec(countDown);
       if (countDown <= 0) then
       begin
@@ -346,38 +380,67 @@ begin
 
     ST_TAKING_BREAK :
     begin
+      // The user has acknowledged, and are (apparently) now taking a break.
       Inc(timerBreak);
       pBreakTime.Caption := 'Break time = ' + FormatDateTime('nn:ss', timerBreak/(24*60*60));
+
+      // Determine the maximum period for which the PC was idle when the user
+      // had indicated that they were taking a break.
+      breakPCIdleTime := Max(breakPCIdleTime, GetIdleTime);
 
       if (timerBreak mod 15 = 0) then
       begin
         // Pop the screen to foreground every 15 seconds while taking the break.
-        // This will encourage the user to stop whatever else they were doing,
-        // and take the break!
+        // This will encourage the user to get away from in front of
+        // the computer, and actually take the break!
         ForceForegroundWindow(Application.Handle);
       end;
 
-      if (timerBreak >= MIN_BREAK_TIME) then
+      if (timerBreak >= MINIMUM_BREAK_SECONDS) then
       begin
-        // The "Return to work" button is enabled only after a minimum break
-        // period has been registered.
-        // This will encourage the user to take the break, for the minimum
-        // configured time.
-        bbTaken.Enabled := TRUE;
-
-        if (timerBreak >= 60 * 60) then
+        if (not bbTaken.Enabled) then
         begin
-          // If the break has been running for 30 minutes, assume that the user
-          // has gone away from the PC, and automatically start work again.
-          bbTakenClick(nil);
+          // The "Resume working" button is enabled only after a minimum break
+          // period has been registered.
+          // This is part of the encouragment to the user to take the break,
+          // for the minimum configured time.
+          bbTaken.Enabled := TRUE;
+          // This beep is to inform someone who might have stepped away from
+          // their PC, that they can come back now.
+          Beep;
+        end // if
+        else
+        begin
+          // The "Resume working" button is enabled
+          if ((breakPCIdleTime > MINIMUM_BREAK_SECONDS * 1000) and
+              (GetIdleTime < 2 * Timer1.Interval)) then
+          begin
+            // The PC was idle for a suitable period of time, and is active
+            // again. Auto-click the "Resume working" button.
+            bbTakenClick(nil);
+          end;
         end;
       end;
     end; // case
 
+    ST_IDLE_PC_UNATTENDED :
+    begin
+      // The PC is considered to be unattended
+      if (GetIdleTime < Timer1.Interval * 10) then
+      begin
+        // The mouse or keyboard has recently been in use.
+        // The PC user is considered to have returned to the PC (from being away)
+
+        // Restart the operations
+        currentState := ST_IDLE_PC_IN_USE;
+        ResetForPCActiveState;
+      end;
+    end;
+
     else
     begin
-      // ST_IDLE
-      currentState := ST_IDLE;
+      // ST_IDLE_PC_IN_USE
+      currentState := ST_IDLE_PC_IN_USE;
 
       Dec(countDown);
       if (countDown > 0) then
@@ -402,10 +465,11 @@ begin
     end;
   end;
 
-  // Only permit changing of the inter-break time during working time.
-  // If enabled during a break, it has occasionally been cleared, resulting in
-  // a very short break repeat time.
-  seMinutes.Enabled := (currentState = ST_IDLE);
+  // Only permit changing of the inter-break time during PC usage time (outside
+  // of the break time).
+  // If enabled during a break, it has occasionally been (inadvertently?) cleared,
+  // resulting in a very short break repeat time.
+  seMinutes.Enabled := (currentState = ST_IDLE_PC_IN_USE);
 end;
 
 end.
