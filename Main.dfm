@@ -15064,6 +15064,13 @@ object fMain: TfMain
       Height = 13
       Caption = 'Next break in XX minutes'
     end
+    object lState: TLabel
+      Left = 220
+      Top = 77
+      Width = 26
+      Height = 13
+      Caption = 'State'
+    end
     object bbTaken: TBitBtn
       Left = 115
       Top = 10

@@ -18,6 +18,7 @@ type
     seMinutes: TSpinEdit;
     bbTaking: TBitBtn;
     pBreakTime: TPanel;
+    lState: TLabel;
     procedure bbTakenClick(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -29,6 +30,7 @@ type
   private
     { Private declarations }
     procedure ResetForPCActiveState;
+    procedure TakingABreak;
   public
     { Public declarations }
   end;
@@ -48,7 +50,7 @@ const
   WARNING_SECONDS = 30;
   WARNING_BEEPS = 5;
   MINIMUM_BREAK_SECONDS = 30;
-  PC_USER_IS_IDLE_MINUTES = 15;   // If no mouse/keyboard in 15 minutes, user is considered to be taking a break.
+  PC_USER_IS_IDLE_MINUTES = 10;   // If no mouse/keyboard in 10 minutes, user is considered to be taking a break.
 
 type
   TState = (
@@ -63,7 +65,6 @@ var
   countDown : Integer;
   timerBreak : Integer;
   numBeeps : Integer;
-  breakPCIdleTime : Integer;      // The maximum amount of time, during the break, when there was no mouse/keyboard activity
 
 {$R *.dfm}
 
@@ -222,7 +223,6 @@ begin
   timerBreak := 0;
   pBreakTime.Caption := 'Break time';
   pBreakTime.Visible := TRUE;
-  breakPCIdleTime := 0;
 end;
 
 //***************************************************************************
@@ -256,11 +256,13 @@ end;
 procedure TfMain.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
   MessageDlg(
-    'Take responsibility for your own health.' + sLineBreak +
-    sLineBreak +
-    'Set the "' + PROGRAM_NAME + '"  program running again as soon as possible.',
+    'To keep this reminder running, rather than closing it,' + sLineBreak +
+    'an hour will be added to the current working time.',
     mtInformation, [mbOK], 0
   );
+  ResetForPCActiveState;
+  Inc(countdown, 60 * 60);
+  Action := caNone;
 end;
 
 //***************************************************************************
@@ -332,6 +334,70 @@ end;
 
 //***************************************************************************
 //
+//  OPERATION : The user has clicked the "Break" button to acknowledge that
+//              they are now taking a break.
+//
+//  I/P       :
+//
+//  O/P       :
+//
+//***************************************************************************
+procedure TfMain.TakingABreak;
+begin
+  Inc(timerBreak);
+  pBreakTime.Caption := 'Break time = ' + FormatDateTime('nn:ss', timerBreak/(24*60*60));
+
+  if (timerBreak mod 15 = 0) then
+  begin
+    // Pop the screen to foreground every 15 seconds while taking the break.
+    // This will encourage the user to get away from in front of
+    // the computer, and actually take the break!
+    ForceForegroundWindow(Application.Handle);
+  end;
+
+  if (not bbTaken.Enabled) then
+  begin
+    // The minimum break time has not yet been recorded
+    if (timerBreak >= MINIMUM_BREAK_SECONDS) then
+    begin
+      // The minimum break time has now been achieved.
+      // Allow the user to resume working.
+      bbTaken.Enabled := TRUE;
+      // This beep is to inform someone who might have stepped away from
+      // their PC, that they can come back now.
+      Beep;
+    end // if
+    else
+    begin
+      // The user is meant to be taking the break now.
+      if (MillisecondsSinceKbdMouse > 1000) then
+      begin
+        // There is no keyboard/mouse activity.
+        lState.Caption := 'The user has left the mouse/keyboard.';
+      end // if
+      else
+      begin
+        // User is actually NOT taking a break!
+        // Punish them by restarting the break timer.
+        timerBreak := 0;
+        lState.Caption := 'You said you were taking a break!';
+      end;
+    end // else
+  end // if
+  else
+  begin
+    // The user is allowed to resume working again
+    if (MillisecondsSinceKbdMouse < 2 * Timer1.Interval) then
+    begin
+      // The PC was idle for a suitable period of time, and is active
+      // again. Auto-click the "Resume working" button.
+      bbTakenClick(nil);
+    end;
+  end; // if
+end;
+
+//***************************************************************************
+//
 //  FUNCTION  :
 //
 //  I/P       :
@@ -345,10 +411,10 @@ end;
 //***************************************************************************
 procedure TfMain.Timer1Timer(Sender: TObject);
 begin
-  if (GetIdleTime > PC_USER_IS_IDLE_MINUTES * 60 * 1000) then
+  if (MillisecondsSinceKbdMouse > PC_USER_IS_IDLE_MINUTES * 60 * 1000) then
   begin
     // Irrespective of the current state, if there has been no mouse/keyboard
-    // activity on the PC for 30 minutes, assume that the computer user is
+    // activity on the PC for some minutes, assume that the computer user is
     // taking some form of a break.
     currentState := ST_IDLE_PC_UNATTENDED;
     ResetForPCActiveState;
@@ -357,6 +423,7 @@ begin
   case currentState of
     ST_TIME_TO_BREAK :
     begin
+      lState.Caption := 'Waiting for user to agree to take a break';
       // Count down the time during which the user does not respond, and take
       // a break (signalled by clicking on the "now taking a break" button)
       Dec(countDown);
@@ -380,53 +447,14 @@ begin
 
     ST_TAKING_BREAK :
     begin
-      // The user has acknowledged, and are (apparently) now taking a break.
-      Inc(timerBreak);
-      pBreakTime.Caption := 'Break time = ' + FormatDateTime('nn:ss', timerBreak/(24*60*60));
-
-      // Determine the maximum period for which the PC was idle when the user
-      // had indicated that they were taking a break.
-      breakPCIdleTime := Max(breakPCIdleTime, GetIdleTime);
-
-      if (timerBreak mod 15 = 0) then
-      begin
-        // Pop the screen to foreground every 15 seconds while taking the break.
-        // This will encourage the user to get away from in front of
-        // the computer, and actually take the break!
-        ForceForegroundWindow(Application.Handle);
-      end;
-
-      if (timerBreak >= MINIMUM_BREAK_SECONDS) then
-      begin
-        if (not bbTaken.Enabled) then
-        begin
-          // The "Resume working" button is enabled only after a minimum break
-          // period has been registered.
-          // This is part of the encouragment to the user to take the break,
-          // for the minimum configured time.
-          bbTaken.Enabled := TRUE;
-          // This beep is to inform someone who might have stepped away from
-          // their PC, that they can come back now.
-          Beep;
-        end // if
-        else
-        begin
-          // The "Resume working" button is enabled
-          if ((breakPCIdleTime > MINIMUM_BREAK_SECONDS * 1000) and
-              (GetIdleTime < 2 * Timer1.Interval)) then
-          begin
-            // The PC was idle for a suitable period of time, and is active
-            // again. Auto-click the "Resume working" button.
-            bbTakenClick(nil);
-          end;
-        end;
-      end;
+      TakingABreak;
     end; // case
 
     ST_IDLE_PC_UNATTENDED :
     begin
+      lState.Caption := 'PC appears to be unattended';
       // The PC is considered to be unattended
-      if (GetIdleTime < Timer1.Interval * 10) then
+      if (MillisecondsSinceKbdMouse < Timer1.Interval * 10) then
       begin
         // The mouse or keyboard has recently been in use.
         // The PC user is considered to have returned to the PC (from being away)
@@ -439,6 +467,10 @@ begin
 
     else
     begin
+      lState.Caption := Format(
+        'PC is in use. Last activity %d seconds ago',
+        [MillisecondsSinceKbdMouse div 1000]
+      );
       // ST_IDLE_PC_IN_USE
       currentState := ST_IDLE_PC_IN_USE;
 
